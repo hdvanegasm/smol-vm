@@ -56,12 +56,63 @@ impl SmolVm {
                         self.stack[self.sp] = sum;
                     }
                 },
+                Instruction::IMUL => {
+                    if self.stack.len() + 1 < 2 {
+                        return false;
+                    } else {
+                        let value1 = self.stack[self.sp];
+                        self.sp -= 1;
+                        let value2 = self.stack[self.sp];
+                        self.sp -= 1;
+                        let mult = value1 * value2;
+                        self.sp += 1;
+                        self.stack[self.sp] = mult;
+                    }
+                },
+                Instruction::ISUB => {
+                    if self.stack.len() + 1 < 2 {
+                        return false;
+                    } else {
+                        let value1 = self.stack[self.sp];
+                        self.sp -= 1;
+                        let value2 = self.stack[self.sp];
+                        self.sp -= 1;
+                        let sub = value1 - value2;
+                        self.sp += 1;
+                        self.stack[self.sp] = sub;
+                    }
+                },
                 Instruction::MSTORE(addr) => {
                     let value = self.stack[self.sp];
                     self.sp -= 1;
                     self.data_memory[*addr] = value;
+                }, 
+                Instruction::MLOAD(addr) => {
+                    let value: i32 = self.data_memory[*addr];
+                    self.sp += 1;
+                    self.stack[self.sp] = value;
+                },
+                Instruction::POP => {
+                    self.sp -= 1;
                 }
-                _ => return false,
+                Instruction::IEQ(value) => {
+                    if *value == self.stack[self.sp] {
+                        self.sp += 1;
+                        self.stack[self.sp] = 1;
+                    } else {
+                        self.sp += 1;
+                        self.stack[self.sp] = 0;
+                    }
+                },
+                Instruction::ILT(value) => {
+                    if *value > self.stack[self.sp] {
+                        self.sp += 1;
+                        self.stack[self.sp] = 1;
+                    } else {
+                        self.sp += 1;
+                        self.stack[self.sp] = 0;
+                    }
+                }
             }
             instruction = &self.code[self.ip];
         }
